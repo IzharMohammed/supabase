@@ -13,6 +13,7 @@ function App() {
   const [newTask, setNewTask] = useState({ title: "", description: "" });
   const [isEditting, setIsEditting] = useState<boolean>(false);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [newDescription, setNewDescription] = useState<string>("");
 
   const fetchTasks = async () => {
     const { error, data } = await supabase
@@ -31,7 +32,7 @@ function App() {
 
   useEffect(() => {
     fetchTasks()
-  }, [newTask]);
+  }, []);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -47,17 +48,19 @@ function App() {
     }
 
     setNewTask({ title: "", description: "" });
+    fetchTasks();
   }
-  const [newDescription, setNewDescription] = useState<string>("");
-  const deletTask = async (id: number) => {
+
+  const deleteTask = async (id: number) => {
     const { data, error } = await supabase.from("tasks").delete().eq("id", id);
     if (error) {
       console.error("Error adding task", error?.message);
       return;
     }
     console.log("data", data);
-
+    fetchTasks();
   }
+
   const updateTask = async (id: number) => {
     const { error, data } = await supabase
       .from("tasks")
@@ -69,6 +72,7 @@ function App() {
     }
     console.log("data", data);
     setIsEditting(false);
+    fetchTasks();
   }
 
   return (
@@ -113,23 +117,24 @@ function App() {
                   placeholder="Updated description..."
                   onChange={(e) => setNewDescription(e.target.value)}
                 />}
-                {isEditting ? <button
-                  onClick={() => {
-                    // setIsEditting(true)
-                    updateTask(task.id)
-                  }}
-                  style={{ padding: "0.5rem 1rem", marginRight: "0.5rem" }}>
-                  save
-                </button> : <button
-                  onClick={() => {
-                    setIsEditting(true)
-                    // updateTask(task.id)
-                  }}
-                  style={{ padding: "0.5rem 1rem", marginRight: "0.5rem" }}>
-                  Edit
-                </button>}
+                {isEditting ?
+                  <button
+                    onClick={() => {
+                      updateTask(task.id)
+                    }}
+                    style={{ padding: "0.5rem 1rem", marginRight: "0.5rem" }}>
+                    save
+                  </button>
+                  :
+                  <button
+                    onClick={() => {
+                      setIsEditting(true)
+                    }}
+                    style={{ padding: "0.5rem 1rem", marginRight: "0.5rem" }}>
+                    Edit
+                  </button>}
                 <button
-                  onClick={() => deletTask(task.id)}
+                  onClick={() => deleteTask(task.id)}
                   style={{ padding: "0.5rem 1rem" }}>
                   Delete
                 </button>
