@@ -36,7 +36,7 @@ const App = () => {
           <>
             {`welcome ${session.user.user_metadata.email}`}
             <button onClick={logout}>Logout</button>
-            <TaskManager session={session}/>
+            <TaskManager />
           </> :
           <>
             <Auth />

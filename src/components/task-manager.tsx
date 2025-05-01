@@ -9,7 +9,7 @@ interface Task {
     image_url?: string
 }
 
-export function TaskManager(session: any) {
+export function TaskManager() {
     const [newTask, setNewTask] = useState({ title: "", description: "" });
     const [isEditting, setIsEditting] = useState<boolean>(false);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -112,7 +112,7 @@ export function TaskManager(session: any) {
         <div style={{ maxWidth: "600px", margin: "0 auto", padding: "1rem" }}>
             <h2>Task Manager CRUD</h2>
 
-            {/* Form to add a new task */}
+            {/* Form to add a new task */}/
             <form onSubmit={handleSubmit} style={{ marginBottom: "1rem" }}>
                 <input
                     type="text"
@@ -146,8 +146,7 @@ export function TaskManager(session: any) {
                         <div>
                             <h3>{task.title}</h3>
                             <p>{task.description}</p>
-                            {/* <img src={`${task.image_url}?token=${session.session.access_token}`} /> */}
-                            <img src={task.image_url} />
+                            <img src={task.image_url} style={{height: 70}} />
                             <div>
                                 {isEditting && <textarea
                                     placeholder="Updated description..."
