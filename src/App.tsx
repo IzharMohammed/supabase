@@ -11,7 +11,7 @@ interface Task {
 
 function App() {
   const [newTask, setNewTask] = useState({ title: "", description: "" });
-
+  const [isEditting, setIsEditting] = useState<boolean>(false);
   const [tasks, setTasks] = useState<Task[]>([]);
 
   const fetchTasks = async () => {
@@ -43,9 +43,32 @@ function App() {
 
     if (error) {
       console.error("Error adding task", error?.message);
+      return;
     }
 
     setNewTask({ title: "", description: "" });
+  }
+  const [newDescription, setNewDescription] = useState<string>("");
+  const deletTask = async (id: number) => {
+    const { data, error } = await supabase.from("tasks").delete().eq("id", id);
+    if (error) {
+      console.error("Error adding task", error?.message);
+      return;
+    }
+    console.log("data", data);
+
+  }
+  const updateTask = async (id: number) => {
+    const { error, data } = await supabase
+      .from("tasks")
+      .update({ description: newDescription })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error adding task", error?.message);
+    }
+    console.log("data", data);
+    setIsEditting(false);
   }
 
   return (
@@ -74,6 +97,7 @@ function App() {
       <ul style={{ listStyle: "none", padding: 0 }}>
         {tasks && tasks.map((task, key) => (
           < li
+            key={key}
             style={{
               border: "1px solid #ccc",
               borderRadius: "4px",
@@ -85,10 +109,30 @@ function App() {
               <h3>{task.title}</h3>
               <p>{task.description}</p>
               <div>
-                <button style={{ padding: "0.5rem 1rem", marginRight: "0.5rem" }}>
+                {isEditting && <textarea
+                  placeholder="Updated description..."
+                  onChange={(e) => setNewDescription(e.target.value)}
+                />}
+                {isEditting ? <button
+                  onClick={() => {
+                    // setIsEditting(true)
+                    updateTask(task.id)
+                  }}
+                  style={{ padding: "0.5rem 1rem", marginRight: "0.5rem" }}>
+                  save
+                </button> : <button
+                  onClick={() => {
+                    setIsEditting(true)
+                    // updateTask(task.id)
+                  }}
+                  style={{ padding: "0.5rem 1rem", marginRight: "0.5rem" }}>
                   Edit
+                </button>}
+                <button
+                  onClick={() => deletTask(task.id)}
+                  style={{ padding: "0.5rem 1rem" }}>
+                  Delete
                 </button>
-                <button style={{ padding: "0.5rem 1rem" }}>Delete</button>
               </div>
             </div>
           </li>
