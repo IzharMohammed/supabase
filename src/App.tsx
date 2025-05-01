@@ -9,7 +9,6 @@ const App = () => {
 
   const fetchSession = async () => {
     const { data } = await supabase.auth.getSession();
-    console.log(data.session);
     setsession(data.session);
   }
   useEffect(() => {
@@ -37,7 +36,7 @@ const App = () => {
           <>
             {`welcome ${session.user.user_metadata.email}`}
             <button onClick={logout}>Logout</button>
-            <TaskManager />
+            <TaskManager session={session}/>
           </> :
           <>
             <Auth />

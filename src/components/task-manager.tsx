@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { supabase } from "../supabase-client";
 
 interface Task {
     id: number,
     title: string,
     description: string,
-    created_at: string
+    created_at: string,
+    image_url?: string
 }
 
-export function TaskManager() {
+export function TaskManager(session: any) {
     const [newTask, setNewTask] = useState({ title: "", description: "" });
     const [isEditting, setIsEditting] = useState<boolean>(false);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -34,9 +35,15 @@ export function TaskManager() {
     const handleSubmit = async (e: any) => {
         e.preventDefault();
 
+        let imageUrl: string | null = null;
+        if (taskImage) {
+            imageUrl = await uploadImage(taskImage);
+        }
+        console.log(imageUrl);
+
         const { error } = await supabase
             .from("tasks")
-            .insert(newTask)
+            .insert({ ...newTask, image_url: imageUrl })
             .single();
 
         if (error) {
@@ -72,6 +79,35 @@ export function TaskManager() {
         fetchTasks();
     }
 
+    const uploadImage = async (file: File): Promise<string | null> => {
+        const filePath = `${file.name}-${Date.now()}`;
+
+        const { error } = await supabase.storage
+            .from("tasks-images")
+            .upload(filePath, file);
+
+        if (error) {
+            console.error("Error uploading image:", error.message);
+            return null;
+        }
+
+        const { data } = await supabase.storage
+            .from("tasks-images")
+            .getPublicUrl(filePath);
+
+        console.log(data);
+
+        return data.publicUrl;
+    }
+    const [taskImage, setTaskImage] = useState<File | null>(null);
+
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            console.log(e.target.files);
+            setTaskImage(e.target.files[0]);
+        }
+    }
+
     return (
         <div style={{ maxWidth: "600px", margin: "0 auto", padding: "1rem" }}>
             <h2>Task Manager CRUD</h2>
@@ -89,6 +125,7 @@ export function TaskManager() {
                     onChange={(e) => { setNewTask((prev) => ({ ...prev, title: e.target.value })) }}
                     style={{ width: "100%", marginBottom: "0.5rem", padding: "0.5rem" }}
                 />
+                <input type="file" accept="image/*" onChange={handleFileChange} />
                 <button type="submit" style={{ padding: "0.5rem 1rem" }}>
                     Add Task
                 </button>
@@ -109,6 +146,8 @@ export function TaskManager() {
                         <div>
                             <h3>{task.title}</h3>
                             <p>{task.description}</p>
+                            {/* <img src={`${task.image_url}?token=${session.session.access_token}`} /> */}
+                            <img src={task.image_url} />
                             <div>
                                 {isEditting && <textarea
                                     placeholder="Updated description..."
