@@ -20,8 +20,6 @@ export function TaskManager() {
             .select("*")
             .order("created_at", { ascending: true })
 
-        console.log(data);
-
         if (error) {
             console.error("Error adding task", error?.message);
         }
